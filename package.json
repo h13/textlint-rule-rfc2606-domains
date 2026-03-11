@@ -1,0 +1,49 @@
+{
+  "name": "textlint-rule-rfc2606-domains",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "tsc --noEmit && vitest run",
+    "prepublishOnly": "pnpm run check && pnpm run build"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.4",
+    "@textlint/kernel": "14.8.4",
+    "@textlint/text-to-ast": "14.8.4",
+    "@vitest/coverage-v8": "3.2.4",
+    "eslint": "9.39.4",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-perfectionist": "4.15.1",
+    "prettier": "3.8.1",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.56.1",
+    "vitest": "3.2.4"
+  },
+  "description": "textlint rule to enforce RFC 2606 reserved domains in documentation",
+  "keywords": [
+    "textlint",
+    "textlintrule",
+    "rfc2606",
+    "domain",
+    "example.com"
+  ],
+  "homepage": "https://github.com/h13/textlint-rule-rfc2606-domains",
+  "repository": "h13/textlint-rule-rfc2606-domains",
+  "license": "MIT",
+  "author": "h13",
+  "exports": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist/"
+  ],
+  "dependencies": {
+    "@textlint/types": "14.8.4"
+  },
+  "packageManager": "pnpm@10.12.1"
+}
