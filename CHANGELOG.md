@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.0
+
+### Breaking Changes
+
+- Remove `dummy` and `todo` patterns to avoid false positives on
+  real services (e.g., `todo.com`, `dummy.io`)
+
+### Improvements
+
+- Add edge case tests (multiple domains, subdomains, mixed case,
+  URLs with paths)
+- Use shared publish workflow
+
 ## 0.1.0
 
 Initial release.
