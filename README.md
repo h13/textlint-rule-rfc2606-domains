@@ -1,5 +1,6 @@
 # textlint-rule-rfc2606-domains
 
+[![npm](https://img.shields.io/npm/v/textlint-rule-rfc2606-domains)](https://www.npmjs.com/package/textlint-rule-rfc2606-domains)
 [![CI](https://github.com/h13/textlint-rule-rfc2606-domains/actions/workflows/ci.yml/badge.svg)](https://github.com/h13/textlint-rule-rfc2606-domains/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 

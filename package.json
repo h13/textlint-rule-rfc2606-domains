@@ -9,7 +9,7 @@
     "test": "vitest run --coverage",
     "test:watch": "vitest",
     "check": "tsc --noEmit && vitest run",
-    "prepublishOnly": "pnpm run check && pnpm run build"
+    "prepublishOnly": "pnpm run build && vitest run"
   },
   "devDependencies": {
     "@eslint/js": "9.39.4",
