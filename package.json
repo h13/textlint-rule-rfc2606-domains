@@ -6,7 +6,7 @@
     "build": "tsc",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "test": "vitest run",
+    "test": "vitest run --coverage",
     "test:watch": "vitest",
     "check": "tsc --noEmit && vitest run",
     "prepublishOnly": "pnpm run check && pnpm run build"
@@ -36,6 +36,7 @@
   "repository": "h13/textlint-rule-rfc2606-domains",
   "license": "MIT",
   "author": "h13",
+  "main": "./dist/index.js",
   "exports": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
