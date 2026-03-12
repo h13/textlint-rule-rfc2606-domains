@@ -62,9 +62,10 @@ Domains with placeholder-like names:
 | `your-domain.*` | `your-domain.com` | `example.com` |
 | `mydomain.*`    | `mydomain.org`    | `example.org` |
 | `mysite.*`      | `mysite.com`      | `example.com` |
-| `dummy.*`       | `dummy.io`        | `example.com` |
+| `mycompany.*`   | `mycompany.net`   | `example.net` |
 | `placeholder.*` | `placeholder.dev` | `example.com` |
 | `changeme.*`    | `changeme.org`    | `example.org` |
+| `replace-me.*`  | `replace-me.com`  | `example.com` |
 
 RFC 2606 reserved domains and well-known real domains
 (e.g., `github.com`) are never flagged.

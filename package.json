@@ -1,7 +1,6 @@
 {
   "name": "textlint-rule-rfc2606-domains",
   "version": "0.1.0",
-  "private": true,
   "type": "module",
   "scripts": {
     "build": "tsc",
@@ -45,5 +44,8 @@
   "dependencies": {
     "@textlint/types": "14.8.4"
   },
-  "packageManager": "pnpm@10.12.1"
+  "packageManager": "pnpm@10.12.1",
+  "engines": {
+    "node": ">=18"
+  }
 }

@@ -79,6 +79,11 @@ describe("rfc2606-domains", () => {
     it("does not flag non-domain text", async () => {
       expect(await lint("The variable yourDomain is a string.")).toEqual([]);
     });
+
+    it("does not flag formerly-matched patterns like dummy.io or todo.com", async () => {
+      expect(await lint("Use dummy.io as a test endpoint.")).toEqual([]);
+      expect(await lint("Check todo.com for tasks.")).toEqual([]);
+    });
   });
 
   describe("invalid", () => {
@@ -111,12 +116,6 @@ describe("rfc2606-domains", () => {
       expect(messages[0]).toContain("mycompany.net");
     });
 
-    it("flags dummy.io", async () => {
-      const messages = await lint("Use dummy.io as a test endpoint.");
-      expect(messages).toHaveLength(1);
-      expect(messages[0]).toContain("dummy.io");
-    });
-
     it("flags placeholder.dev", async () => {
       const messages = await lint(
         "Replace placeholder.dev with your real domain.",
@@ -129,6 +128,33 @@ describe("rfc2606-domains", () => {
       const messages = await lint("Update changeme.org in your config.");
       expect(messages).toHaveLength(1);
       expect(messages[0]).toContain("changeme.org");
+    });
+
+    it("flags multiple placeholder domains in one line", async () => {
+      const messages = await lint(
+        "Set mydomain.com and your-site.org in the config.",
+      );
+      expect(messages).toHaveLength(2);
+    });
+
+    it("flags subdomains of placeholder domains", async () => {
+      const messages = await lint("Call api.your-domain.com for the endpoint.");
+      expect(messages).toHaveLength(1);
+      expect(messages[0]).toContain("api.your-domain.com");
+    });
+
+    it("flags mixed-case placeholder domains", async () => {
+      const messages = await lint("Configure Your-Domain.COM in DNS.");
+      expect(messages).toHaveLength(1);
+      expect(messages[0]).toContain("Your-Domain.COM");
+    });
+
+    it("flags placeholder domains in URLs with paths", async () => {
+      const messages = await lint(
+        "Visit https://your-domain.com/api/v1 for docs.",
+      );
+      expect(messages).toHaveLength(1);
+      expect(messages[0]).toContain("your-domain.com");
     });
   });
 });

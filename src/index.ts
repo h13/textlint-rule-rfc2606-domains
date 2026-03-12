@@ -21,11 +21,9 @@ const PLACEHOLDER_PATTERNS = [
   /some-?domain/i,
   /some-?site/i,
   /sample-?domain/i,
-  /dummy/i,
   /placeholder/i,
   /changeme/i,
   /replace-?me/i,
-  /todo/i,
 ];
 
 // Match domain-like strings, including after @ (email) and in URLs
