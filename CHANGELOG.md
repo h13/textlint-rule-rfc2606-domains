@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.0
+
+### Features
+
+- Add Codecov integration with coverage badge
+
+### Maintenance
+
+- Update all dependencies to latest major versions (eslint 10, vitest 4, @textlint/\* 15, eslint-plugin-perfectionist 5)
+
 ## 0.2.0
 
 ### Breaking Changes
