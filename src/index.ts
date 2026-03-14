@@ -39,9 +39,7 @@ const isReservedDomain = (domain: string): boolean => {
   if (RESERVED_DOMAINS.has(lower)) {
     return true;
   }
-  // split() always returns a non-empty array, so pop() never returns undefined
-  /* v8 ignore next */
-  const tld = lower.split(".").pop() ?? "";
+  const tld = lower.substring(lower.lastIndexOf(".") + 1);
   return RESERVED_TLDS.has(`.${tld}`);
 };
 
@@ -73,9 +71,8 @@ const rule: TextlintRuleModule<Options> = (context, options = {}) => {
       DOMAIN_REGEX.lastIndex = 0;
 
       while ((match = DOMAIN_REGEX.exec(text)) !== null) {
-        const domain = match[1];
-        /* v8 ignore next -- DOMAIN_REGEX group 1 always captures */
-        if (!domain) continue;
+        // DOMAIN_REGEX group 1 always captures when match is non-null
+        const domain = match[1] as string;
         const lower = domain.toLowerCase();
 
         if (isReservedDomain(lower) || allowDomains.has(lower)) {
