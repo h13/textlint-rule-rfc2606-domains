@@ -71,8 +71,8 @@ const rule: TextlintRuleModule<Options> = (context, options = {}) => {
       DOMAIN_REGEX.lastIndex = 0;
 
       while ((match = DOMAIN_REGEX.exec(text)) !== null) {
-        // DOMAIN_REGEX group 1 always captures when match is non-null
-        const domain = match[1] as string;
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- DOMAIN_REGEX group 1 always captures
+        const domain = match[1]!;
         const lower = domain.toLowerCase();
 
         if (isReservedDomain(lower) || allowDomains.has(lower)) {
