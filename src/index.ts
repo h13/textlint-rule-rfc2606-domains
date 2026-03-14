@@ -31,11 +31,16 @@ const PLACEHOLDER_PATTERNS = [
 const DOMAIN_REGEX =
   /(?:[@/.]|^|\s)(([a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)*([a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)\.([a-zA-Z]{2,}))(?=[^a-zA-Z0-9]|$)/g;
 
+// Skip regex matching on very long text nodes to avoid ReDoS
+const MAX_TEXT_LENGTH = 10_000;
+
 const isReservedDomain = (domain: string): boolean => {
   const lower = domain.toLowerCase();
   if (RESERVED_DOMAINS.has(lower)) {
     return true;
   }
+  // split() always returns a non-empty array, so pop() never returns undefined
+  /* v8 ignore next */
   const tld = lower.split(".").pop() ?? "";
   return RESERVED_TLDS.has(`.${tld}`);
 };
@@ -63,11 +68,13 @@ const rule: TextlintRuleModule<Options> = (context, options = {}) => {
   return {
     [Syntax.Str](node) {
       const text = getSource(node);
+      if (text.length > MAX_TEXT_LENGTH) return;
       let match;
       DOMAIN_REGEX.lastIndex = 0;
 
       while ((match = DOMAIN_REGEX.exec(text)) !== null) {
         const domain = match[1];
+        /* v8 ignore next -- DOMAIN_REGEX group 1 always captures */
         if (!domain) continue;
         const lower = domain.toLowerCase();
 

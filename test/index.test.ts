@@ -157,4 +157,11 @@ describe("rfc2606-domains", () => {
       expect(messages[0]).toContain("your-domain.com");
     });
   });
+
+  describe("ReDoS protection", () => {
+    it("skips text nodes exceeding MAX_TEXT_LENGTH", async () => {
+      const longText = `${"a".repeat(10_001)} your-domain.com`;
+      expect(await lint(longText)).toEqual([]);
+    });
+  });
 });
