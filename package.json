@@ -1,15 +1,36 @@
 {
   "name": "textlint-rule-rfc2606-domains",
-  "version": "0.2.0",
+  "version": "0.2.1",
+  "description": "textlint rule to enforce RFC 2606 reserved domains in documentation",
+  "keywords": [
+    "textlint",
+    "textlintrule",
+    "rfc2606",
+    "domain",
+    "example.com"
+  ],
+  "homepage": "https://github.com/h13/textlint-rule-rfc2606-domains",
+  "repository": "h13/textlint-rule-rfc2606-domains",
+  "license": "MIT",
+  "author": "h13",
   "type": "module",
+  "exports": "./dist/index.js",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist/"
+  ],
   "scripts": {
     "build": "tsc",
-    "lint": "eslint .",
-    "format": "prettier --write .",
-    "test": "vitest run --coverage",
-    "test:watch": "vitest",
     "check": "tsc --noEmit && vitest run",
-    "prepublishOnly": "pnpm run build && vitest run"
+    "format": "prettier --write .",
+    "lint": "eslint .",
+    "prepublishOnly": "pnpm run build && vitest run",
+    "test": "vitest run --coverage",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@textlint/types": "14.8.4"
   },
   "devDependencies": {
     "@eslint/js": "9.39.4",
@@ -23,27 +44,6 @@
     "typescript": "5.9.3",
     "typescript-eslint": "8.56.1",
     "vitest": "3.2.4"
-  },
-  "description": "textlint rule to enforce RFC 2606 reserved domains in documentation",
-  "keywords": [
-    "textlint",
-    "textlintrule",
-    "rfc2606",
-    "domain",
-    "example.com"
-  ],
-  "homepage": "https://github.com/h13/textlint-rule-rfc2606-domains",
-  "repository": "h13/textlint-rule-rfc2606-domains",
-  "license": "MIT",
-  "author": "h13",
-  "main": "./dist/index.js",
-  "exports": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "files": [
-    "dist/"
-  ],
-  "dependencies": {
-    "@textlint/types": "14.8.4"
   },
   "packageManager": "pnpm@10.12.1",
   "engines": {
