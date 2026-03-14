@@ -26,16 +26,15 @@ const PLACEHOLDER_PATTERNS = [
   /replace-?me/i,
 ];
 
-// Match domain-like strings, including after @ (email) and in URLs
+// Match domain-like strings preceded by any non-alphanumeric character or start of string
 // Captures: optional subdomains + domain + TLD (2+ alpha chars)
 const DOMAIN_REGEX =
-  /(?:[@/.]|^|\s)(([a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)*([a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)\.([a-zA-Z]{2,}))(?=[^a-zA-Z0-9]|$)/g;
+  /(?:[^a-zA-Z0-9]|^)(([a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)*([a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)\.([a-zA-Z]{2,}))(?=[^a-zA-Z0-9]|$)/g;
 
 // Skip regex matching on very long text nodes to avoid ReDoS
 const MAX_TEXT_LENGTH = 10_000;
 
-const isReservedDomain = (domain: string): boolean => {
-  const lower = domain.toLowerCase();
+const isReservedDomain = (lower: string): boolean => {
   if (RESERVED_DOMAINS.has(lower)) {
     return true;
   }
@@ -44,13 +43,10 @@ const isReservedDomain = (domain: string): boolean => {
 };
 
 const isPlaceholderDomain = (domain: string): boolean => {
-  // Check all parts of the domain (not just the first subdomain)
   const parts = domain.split(".");
-  // Domain always contains at least one "." (guaranteed by DOMAIN_REGEX),
-  // so parts.length >= 2 and the indexed access is safe.
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const domainName = parts[parts.length - 2]!;
-  return PLACEHOLDER_PATTERNS.some((pattern) => pattern.test(domainName));
+  return parts
+    .slice(0, -1)
+    .some((part) => PLACEHOLDER_PATTERNS.some((pattern) => pattern.test(part)));
 };
 
 export interface Options {
@@ -63,33 +59,57 @@ const rule: TextlintRuleModule<Options> = (context, options = {}) => {
     (options.allowDomains ?? []).map((d) => d.toLowerCase()),
   );
 
-  return {
-    [Syntax.Str](node) {
-      const text = getSource(node);
-      if (text.length > MAX_TEXT_LENGTH) return;
-      let match;
-      DOMAIN_REGEX.lastIndex = 0;
+  const checkText = (
+    text: string,
+    node: Parameters<typeof report>[0],
+    baseIndex: number,
+  ) => {
+    if (text.length > MAX_TEXT_LENGTH) return;
+    DOMAIN_REGEX.lastIndex = 0;
+    let match;
 
-      while ((match = DOMAIN_REGEX.exec(text)) !== null) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- DOMAIN_REGEX group 1 always captures
-        const domain = match[1]!;
-        const lower = domain.toLowerCase();
+    while ((match = DOMAIN_REGEX.exec(text)) !== null) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- DOMAIN_REGEX group 1 always captures
+      const domain = match[1]!;
+      const lower = domain.toLowerCase();
 
-        if (isReservedDomain(lower) || allowDomains.has(lower)) {
-          continue;
-        }
-
-        if (isPlaceholderDomain(lower)) {
-          const domainIndex = match.index + match[0].indexOf(domain);
-          report(
-            node,
-            new RuleError(
-              `"${domain}" looks like a placeholder domain. Use RFC 2606 reserved domains instead (example.com, example.net, example.org) or reserved TLDs (.test, .example, .invalid, .localhost).`,
-              { index: domainIndex },
-            ),
-          );
-        }
+      if (isReservedDomain(lower) || allowDomains.has(lower)) {
+        continue;
       }
+
+      if (isPlaceholderDomain(lower)) {
+        const domainIndex = baseIndex + match.index + match[0].indexOf(domain);
+        report(
+          node,
+          new RuleError(
+            `"${domain}" looks like a placeholder domain. Use RFC 2606 reserved domains instead (example.com, example.net, example.org) or reserved TLDs (.test, .example, .invalid, .localhost).`,
+            { index: domainIndex },
+          ),
+        );
+      }
+    }
+  };
+
+  const checkNodeUrl = (node: Parameters<typeof report>[0]) => {
+    /* v8 ignore start -- Link/Image nodes always have a string url present in source */
+    const url = "url" in node ? node.url : undefined;
+    if (typeof url !== "string") return;
+    const source = getSource(node);
+    const urlStart = source.lastIndexOf(url);
+    if (urlStart < 0) return;
+    /* v8 ignore stop */
+    checkText(url, node, urlStart);
+  };
+
+  return {
+    [Syntax.Image](node) {
+      checkNodeUrl(node);
+    },
+    [Syntax.Link](node) {
+      checkNodeUrl(node);
+    },
+    [Syntax.Str](node) {
+      checkText(getSource(node), node, 0);
     },
   };
 };

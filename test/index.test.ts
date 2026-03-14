@@ -1,8 +1,28 @@
 import { TextlintKernel } from "@textlint/kernel";
+import { parse as parseMarkdown } from "@textlint/markdown-to-ast";
 import { parse } from "@textlint/text-to-ast";
 import { describe, expect, it } from "vitest";
 
 import rule from "../src/index.js";
+
+class MarkdownProcessor {
+  static availableExtensions() {
+    return [".md"];
+  }
+  processor() {
+    return {
+      postProcess(
+        messages: readonly { message: string }[],
+        filePath: string,
+      ) {
+        return { filePath, messages };
+      },
+      preProcess(text: string, _filePath: string) {
+        return parseMarkdown(text);
+      },
+    };
+  }
+}
 
 class TextProcessor {
   static availableExtensions() {
@@ -34,6 +54,24 @@ const lint = async (
       {
         plugin: { Processor: TextProcessor },
         pluginId: "text",
+      },
+    ],
+    rules: [{ options, rule, ruleId: "rfc2606-domains" }],
+  });
+  return result.messages.map((m) => m.message);
+};
+
+const lintMd = async (
+  text: string,
+  options: Record<string, unknown> = {},
+): Promise<readonly string[]> => {
+  const kernel = new TextlintKernel();
+  const result = await kernel.lintText(text, {
+    ext: ".md",
+    plugins: [
+      {
+        plugin: { Processor: MarkdownProcessor },
+        pluginId: "markdown",
       },
     ],
     rules: [{ options, rule, ruleId: "rfc2606-domains" }],
@@ -155,6 +193,100 @@ describe("rfc2606-domains", () => {
       );
       expect(messages).toHaveLength(1);
       expect(messages[0]).toContain("your-domain.com");
+    });
+
+    it("flags replaceme.com", async () => {
+      const messages = await lint("Update replaceme.com with real domain.");
+      expect(messages).toHaveLength(1);
+      expect(messages[0]).toContain("replaceme.com");
+    });
+
+    it("flags sample-domain.net", async () => {
+      const messages = await lint("See sample-domain.net for examples.");
+      expect(messages).toHaveLength(1);
+      expect(messages[0]).toContain("sample-domain.net");
+    });
+
+    it("flags somedomain.org", async () => {
+      const messages = await lint("Configure somedomain.org in DNS.");
+      expect(messages).toHaveLength(1);
+      expect(messages[0]).toContain("somedomain.org");
+    });
+
+    it("flags somesite.com", async () => {
+      const messages = await lint("Visit somesite.com for docs.");
+      expect(messages).toHaveLength(1);
+      expect(messages[0]).toContain("somesite.com");
+    });
+
+    it("flags yourcompany.net", async () => {
+      const messages = await lint("Email admin@yourcompany.net for support.");
+      expect(messages).toHaveLength(1);
+      expect(messages[0]).toContain("yourcompany.net");
+    });
+  });
+
+  describe("domains in delimiters", () => {
+    it("flags domains in parentheses", async () => {
+      const messages = await lint("Check (your-domain.com) for details.");
+      expect(messages).toHaveLength(1);
+      expect(messages[0]).toContain("your-domain.com");
+    });
+
+    it("flags domains in double quotes", async () => {
+      const messages = await lint('Set "your-domain.com" in config.');
+      expect(messages).toHaveLength(1);
+      expect(messages[0]).toContain("your-domain.com");
+    });
+
+    it("flags domains in angle brackets", async () => {
+      const messages = await lint("Use <your-domain.com> as the host.");
+      expect(messages).toHaveLength(1);
+      expect(messages[0]).toContain("your-domain.com");
+    });
+  });
+
+  describe("ccTLD support", () => {
+    it("flags placeholder.co.uk", async () => {
+      const messages = await lint("Visit placeholder.co.uk for info.");
+      expect(messages).toHaveLength(1);
+      expect(messages[0]).toContain("placeholder.co.uk");
+    });
+
+    it("flags your-domain.co.jp", async () => {
+      const messages = await lint("Set your-domain.co.jp as base URL.");
+      expect(messages).toHaveLength(1);
+      expect(messages[0]).toContain("your-domain.co.jp");
+    });
+  });
+
+  describe("markdown support", () => {
+    it("flags placeholder domains in link URLs", async () => {
+      const messages = await lintMd(
+        "[click here](https://your-domain.com/page)",
+      );
+      expect(messages).toHaveLength(1);
+      expect(messages[0]).toContain("your-domain.com");
+    });
+
+    it("flags placeholder domains in image URLs", async () => {
+      const messages = await lintMd(
+        "![alt](https://your-domain.com/image.png)",
+      );
+      expect(messages).toHaveLength(1);
+      expect(messages[0]).toContain("your-domain.com");
+    });
+
+    it("allows RFC 2606 domains in link URLs", async () => {
+      expect(
+        await lintMd("[docs](https://example.com/docs)"),
+      ).toEqual([]);
+    });
+
+    it("allows RFC 2606 domains in image URLs", async () => {
+      expect(
+        await lintMd("![logo](https://example.org/logo.png)"),
+      ).toEqual([]);
     });
   });
 
