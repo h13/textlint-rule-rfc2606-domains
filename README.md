@@ -2,6 +2,7 @@
 
 [![npm](https://img.shields.io/npm/v/textlint-rule-rfc2606-domains)](https://www.npmjs.com/package/textlint-rule-rfc2606-domains)
 [![CI](https://github.com/h13/textlint-rule-rfc2606-domains/actions/workflows/ci.yml/badge.svg)](https://github.com/h13/textlint-rule-rfc2606-domains/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/h13/textlint-rule-rfc2606-domains/graph/badge.svg)](https://codecov.io/gh/h13/textlint-rule-rfc2606-domains)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 A [textlint](https://textlint.github.io/) rule that detects
