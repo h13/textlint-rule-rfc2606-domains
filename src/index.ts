@@ -84,7 +84,7 @@ const reporter: TextlintRuleReporter<Options> = (context, options = {}) => {
         report(
           node,
           new RuleError(
-            `"${domain}" looks like a placeholder domain. Use RFC 2606 reserved domains instead (example.com, example.net, example.org) or reserved TLDs (.test, .example, .invalid, .localhost).`,
+            `"${domain}" looks like a placeholder domain. Use "${replacement}" instead (RFC 2606).`,
             {
               fix: fixer.replaceTextRange(
                 [domainIndex, domainIndex + domain.length],

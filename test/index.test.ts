@@ -108,21 +108,22 @@ describe("rfc2606-domains", () => {
   });
 
   describe("invalid", () => {
-    it("flags your-domain.com", async () => {
+    it("flags your-domain.com with replacement suggestion", async () => {
       const messages = await lint(
         "Configure your-domain.com in the DNS settings.",
       );
       expect(messages).toHaveLength(1);
       expect(messages[0]).toContain("your-domain.com");
-      expect(messages[0]).toContain("RFC 2606");
+      expect(messages[0]).toContain('"example.com"');
     });
 
-    it("flags mydomain.org", async () => {
+    it("flags mydomain.org with TLD-appropriate suggestion", async () => {
       const messages = await lint(
         "Set the base URL to mydomain.org for production.",
       );
       expect(messages).toHaveLength(1);
       expect(messages[0]).toContain("mydomain.org");
+      expect(messages[0]).toContain('"example.org"');
     });
 
     it("flags mysite.com", async () => {
