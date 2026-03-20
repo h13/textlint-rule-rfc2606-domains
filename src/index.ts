@@ -42,7 +42,14 @@ const buildReplacement = (domain: string, sld: string, tld: string): string => {
   const baseDomain = `${sld}.${tld}`;
   const subdomainPrefix = domain.slice(0, domain.length - baseDomain.length);
   const rfcDomain = RFC_DOMAIN_MAP[tld.toLowerCase()] ?? "example.com";
-  return subdomainPrefix + rfcDomain;
+  if (!subdomainPrefix) return rfcDomain;
+  const cleanLabels = subdomainPrefix
+    .replace(/\.$/, "")
+    .split(".")
+    .filter((label) => !PLACEHOLDER_PATTERN.test(label));
+  return cleanLabels.length > 0
+    ? `${cleanLabels.join(".")}.${rfcDomain}`
+    : rfcDomain;
 };
 
 export interface Options {

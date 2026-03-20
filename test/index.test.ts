@@ -241,6 +241,24 @@ describe("rfc2606-domains", () => {
       expect(messages).toHaveLength(1);
       expect(messages[0]).toContain("your-domain.co.jp");
     });
+
+    it("fixes placeholder.co.uk to example.com", async () => {
+      expect(await fix("Visit placeholder.co.uk for info.")).toBe(
+        "Visit example.com for info.",
+      );
+    });
+
+    it("fixes your-domain.co.jp to example.com", async () => {
+      expect(await fix("Set your-domain.co.jp as base URL.")).toBe(
+        "Set example.com as base URL.",
+      );
+    });
+
+    it("fixes api.your-domain.co.uk preserving non-placeholder subdomain", async () => {
+      expect(await fix("Call api.your-domain.co.uk endpoint.")).toBe(
+        "Call api.example.com endpoint.",
+      );
+    });
   });
 
   describe("markdown support", () => {
