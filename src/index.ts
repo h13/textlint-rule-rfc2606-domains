@@ -11,20 +11,8 @@ const RESERVED_DOMAINS = new Set([
 const RESERVED_TLDS = new Set([".example", ".invalid", ".localhost", ".test"]);
 
 // Common placeholder domain patterns that should use RFC 2606 domains instead
-const PLACEHOLDER_PATTERNS = [
-  /your-?domain/i,
-  /my-?domain/i,
-  /my-?site/i,
-  /my-?company/i,
-  /your-?site/i,
-  /your-?company/i,
-  /some-?domain/i,
-  /some-?site/i,
-  /sample-?domain/i,
-  /placeholder/i,
-  /changeme/i,
-  /replace-?me/i,
-];
+const PLACEHOLDER_PATTERN =
+  /your-?domain|my-?domain|my-?site|my-?company|your-?site|your-?company|some-?domain|some-?site|sample-?domain|placeholder|changeme|replace-?me/i;
 
 // Match domain-like strings preceded by any non-alphanumeric character or start of string
 // Captures: optional subdomains + domain + TLD (2+ alpha chars)
@@ -34,20 +22,15 @@ const DOMAIN_REGEX =
 // Skip regex matching on very long text nodes to avoid ReDoS
 const MAX_TEXT_LENGTH = 10_000;
 
-const isReservedDomain = (lower: string): boolean => {
-  if (RESERVED_DOMAINS.has(lower)) {
-    return true;
-  }
-  const tld = lower.substring(lower.lastIndexOf(".") + 1);
-  return RESERVED_TLDS.has(`.${tld}`);
-};
+const isReservedDomain = (lower: string): boolean =>
+  RESERVED_DOMAINS.has(lower) ||
+  RESERVED_TLDS.has(`.${lower.substring(lower.lastIndexOf(".") + 1)}`);
 
-const isPlaceholderDomain = (domain: string): boolean => {
-  const parts = domain.split(".");
-  return parts
+const isPlaceholderDomain = (domain: string): boolean =>
+  domain
+    .split(".")
     .slice(0, -1)
-    .some((part) => PLACEHOLDER_PATTERNS.some((pattern) => pattern.test(part)));
-};
+    .some((part) => PLACEHOLDER_PATTERN.test(part));
 
 export interface Options {
   readonly allowDomains?: readonly string[];
@@ -55,15 +38,12 @@ export interface Options {
 
 const rule: TextlintRuleModule<Options> = (context, options = {}) => {
   const { getSource, report, RuleError, Syntax } = context;
+  type Node = Parameters<typeof report>[0];
   const allowDomains = new Set(
     (options.allowDomains ?? []).map((d) => d.toLowerCase()),
   );
 
-  const checkText = (
-    text: string,
-    node: Parameters<typeof report>[0],
-    baseIndex: number,
-  ) => {
+  const checkText = (text: string, node: Node, baseIndex: number) => {
     if (text.length > MAX_TEXT_LENGTH) return;
     DOMAIN_REGEX.lastIndex = 0;
     let match;
@@ -90,7 +70,7 @@ const rule: TextlintRuleModule<Options> = (context, options = {}) => {
     }
   };
 
-  const checkNodeUrl = (node: Parameters<typeof report>[0]) => {
+  const checkNodeUrl = (node: Node) => {
     /* v8 ignore start -- Link/Image nodes always have a string url present in source */
     const url = "url" in node ? node.url : undefined;
     if (typeof url !== "string") return;

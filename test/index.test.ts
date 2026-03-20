@@ -5,79 +5,43 @@ import { describe, expect, it } from "vitest";
 
 import rule from "../src/index.js";
 
-class MarkdownProcessor {
-  static availableExtensions() {
-    return [".md"];
-  }
-  processor() {
-    return {
-      postProcess(
-        messages: readonly { message: string }[],
-        filePath: string,
-      ) {
-        return { filePath, messages };
-      },
-      preProcess(text: string, _filePath: string) {
-        return parseMarkdown(text);
-      },
-    };
-  }
-}
+type PreProcess = (text: string, filePath: string) => ReturnType<typeof parse>;
 
-class TextProcessor {
-  static availableExtensions() {
-    return [".txt"];
-  }
-  processor() {
-    return {
-      postProcess(
-        messages: readonly { message: string }[],
-        filePath: string,
-      ) {
-        return { filePath, messages };
-      },
-      preProcess(text: string, _filePath: string) {
-        return parse(text);
-      },
-    };
-  }
-}
+const postProcess = (
+  messages: readonly { message: string }[],
+  filePath: string,
+) => ({ filePath, messages });
 
-const lint = async (
-  text: string,
-  options: Record<string, unknown> = {},
-): Promise<readonly string[]> => {
-  const kernel = new TextlintKernel();
-  const result = await kernel.lintText(text, {
-    ext: ".txt",
-    plugins: [
-      {
-        plugin: { Processor: TextProcessor },
-        pluginId: "text",
-      },
-    ],
-    rules: [{ options, rule, ruleId: "rfc2606-domains" }],
-  });
-  return result.messages.map((m) => m.message);
-};
+const createProcessor = (ext: string, preProcess: PreProcess) =>
+  class {
+    static availableExtensions() {
+      return [ext];
+    }
+    processor() {
+      return { postProcess, preProcess };
+    }
+  };
 
-const lintMd = async (
-  text: string,
-  options: Record<string, unknown> = {},
-): Promise<readonly string[]> => {
-  const kernel = new TextlintKernel();
-  const result = await kernel.lintText(text, {
-    ext: ".md",
-    plugins: [
-      {
-        plugin: { Processor: MarkdownProcessor },
-        pluginId: "markdown",
-      },
-    ],
-    rules: [{ options, rule, ruleId: "rfc2606-domains" }],
-  });
-  return result.messages.map((m) => m.message);
-};
+const TextProcessor = createProcessor(".txt", (text) => parse(text));
+const MarkdownProcessor = createProcessor(".md", (text) => parseMarkdown(text));
+
+const createLinter =
+  (ext: string, Processor: ReturnType<typeof createProcessor>) =>
+  async (
+    text: string,
+    options: Record<string, unknown> = {},
+  ): Promise<readonly string[]> => {
+    const kernel = new TextlintKernel();
+    const result = await kernel.lintText(text, {
+      ext,
+      plugins: [{ plugin: { Processor }, pluginId: ext.slice(1) }],
+      rules: [{ options, rule, ruleId: "rfc2606-domains" }],
+    });
+    return result.messages.map((m) => m.message);
+  };
+
+const lint = createLinter(".txt", TextProcessor);
+const lintMd = createLinter(".md", MarkdownProcessor);
 
 describe("rfc2606-domains", () => {
   describe("valid", () => {
