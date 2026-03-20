@@ -24,6 +24,14 @@ reserves specific domains for safe use in documentation:
 ## Install
 
 ```bash
+npm install -D textlint-rule-rfc2606-domains
+```
+
+```bash
+yarn add -D textlint-rule-rfc2606-domains
+```
+
+```bash
 pnpm add -D textlint-rule-rfc2606-domains
 ```
 
@@ -55,9 +63,20 @@ Domains to allow (e.g., your actual production domain):
 }
 ```
 
+## Auto-fix
+
+This rule supports `textlint --fix`. Placeholder domains are
+automatically replaced with the corresponding RFC 2606 domain:
+
+- `.com` → `example.com`, `.net` → `example.net`,
+  `.org` → `example.org`, others → `example.com`
+- Subdomains are preserved:
+  `api.your-domain.com` → `api.example.com`
+
 ## What Gets Flagged
 
-Domains with placeholder-like names:
+Domains with placeholder-like names in text, links, images,
+inline code, and code blocks:
 
 | Pattern         | Example           | Suggestion    |
 | --------------- | ----------------- | ------------- |
@@ -65,9 +84,19 @@ Domains with placeholder-like names:
 | `mydomain.*`    | `mydomain.org`    | `example.org` |
 | `mysite.*`      | `mysite.com`      | `example.com` |
 | `mycompany.*`   | `mycompany.net`   | `example.net` |
+| `acme.*`        | `acme.com`        | `example.com` |
 | `placeholder.*` | `placeholder.dev` | `example.com` |
 | `changeme.*`    | `changeme.org`    | `example.org` |
 | `replace-me.*`  | `replace-me.com`  | `example.com` |
+| `test-site.*`   | `test-site.org`   | `example.org` |
+| `fake-domain.*` | `fake-domain.net` | `example.net` |
+| `demo-site.*`   | `demo-site.com`   | `example.com` |
+| `my-app.*`      | `my-app.dev`      | `example.com` |
+| `your-api.*`    | `your-api.io`     | `example.com` |
+
+Also detected: `my-api`, `my-server`, `your-server`, `test-domain`,
+`fake-site`, `demo-domain`, `sample-domain`, `some-domain`, `some-site`,
+and `xxx` patterns (3+ consecutive x's).
 
 RFC 2606 reserved domains and well-known real domains
 (e.g., `github.com`) are never flagged.

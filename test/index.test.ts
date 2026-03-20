@@ -63,9 +63,9 @@ const fixMd = createFixer(".md", MarkdownProcessor);
 describe("rfc2606-domains", () => {
   describe("valid", () => {
     it("allows RFC 2606 reserved domains", async () => {
-      expect(await lint("Send email to admin@example.com for support.")).toEqual(
-        [],
-      );
+      expect(
+        await lint("Send email to admin@example.com for support."),
+      ).toEqual([]);
       expect(await lint("See https://example.org/docs for details.")).toEqual(
         [],
       );
@@ -74,7 +74,9 @@ describe("rfc2606-domains", () => {
 
     it("allows RFC 6761 reserved TLDs", async () => {
       expect(await lint("Use myapp.test for local development.")).toEqual([]);
-      expect(await lint("Configure service.localhost for testing.")).toEqual([]);
+      expect(await lint("Configure service.localhost for testing.")).toEqual(
+        [],
+      );
       expect(await lint("Route to backend.invalid for error testing.")).toEqual(
         [],
       );
@@ -266,21 +268,17 @@ describe("rfc2606-domains", () => {
     });
 
     it("fixes domain in URL when link text also contains it", async () => {
-      expect(
-        await fixMd("[your-domain.com](https://your-domain.com)"),
-      ).toBe("[example.com](https://example.com)");
+      expect(await fixMd("[your-domain.com](https://your-domain.com)")).toBe(
+        "[example.com](https://example.com)",
+      );
     });
 
     it("allows RFC 2606 domains in link URLs", async () => {
-      expect(
-        await lintMd("[docs](https://example.com/docs)"),
-      ).toEqual([]);
+      expect(await lintMd("[docs](https://example.com/docs)")).toEqual([]);
     });
 
     it("allows RFC 2606 domains in image URLs", async () => {
-      expect(
-        await lintMd("![logo](https://example.org/logo.png)"),
-      ).toEqual([]);
+      expect(await lintMd("![logo](https://example.org/logo.png)")).toEqual([]);
     });
   });
 
@@ -360,9 +358,7 @@ describe("rfc2606-domains", () => {
 
   describe("code node support", () => {
     it("flags placeholder domains in inline code", async () => {
-      const messages = await lintMd(
-        "Run `curl https://your-domain.com/api`.",
-      );
+      const messages = await lintMd("Run `curl https://your-domain.com/api`.");
       expect(messages).toHaveLength(1);
       expect(messages[0]).toContain("your-domain.com");
     });
@@ -450,9 +446,9 @@ describe("rfc2606-domains", () => {
     });
 
     it("fixes placeholder domains in code blocks", async () => {
-      expect(
-        await fixMd("```\nhost: your-domain.com\n```"),
-      ).toBe("```\nhost: example.com\n```");
+      expect(await fixMd("```\nhost: your-domain.com\n```")).toBe(
+        "```\nhost: example.com\n```",
+      );
     });
   });
 

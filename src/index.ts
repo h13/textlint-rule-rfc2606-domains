@@ -1,11 +1,10 @@
-import type { TextlintFixableRuleModule, TextlintRuleReporter } from "@textlint/types";
+import type {
+  TextlintFixableRuleModule,
+  TextlintRuleReporter,
+} from "@textlint/types";
 
 // RFC 2606 reserved second-level domains
-const RESERVED_DOMAINS = new Set([
-  "example.com",
-  "example.net",
-  "example.org",
-]);
+const RESERVED_DOMAINS = new Set(["example.com", "example.net", "example.org"]);
 
 // RFC 2606 / RFC 6761 reserved TLDs
 const RESERVED_TLDS = new Set([".example", ".invalid", ".localhost", ".test"]);
@@ -94,7 +93,10 @@ const reporter: TextlintRuleReporter<Options> = (context, options = {}) => {
 
   const checkNodeProperty = (node: Node, prop: string) => {
     /* v8 ignore start -- target nodes always have the expected string property in source */
-    const value = prop in node ? (node as unknown as Record<string, unknown>)[prop] : undefined;
+    const value =
+      prop in node
+        ? (node as unknown as Record<string, unknown>)[prop]
+        : undefined;
     if (typeof value !== "string") return;
     const source = getSource(node);
     const valueStart = source.lastIndexOf(value);
@@ -122,6 +124,9 @@ const reporter: TextlintRuleReporter<Options> = (context, options = {}) => {
   };
 };
 
-const rule: TextlintFixableRuleModule<Options> = { fixer: reporter, linter: reporter };
+const rule: TextlintFixableRuleModule<Options> = {
+  fixer: reporter,
+  linter: reporter,
+};
 
 export default rule;
