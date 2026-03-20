@@ -10,7 +10,13 @@
     "example.com"
   ],
   "homepage": "https://github.com/h13/textlint-rule-rfc2606-domains",
-  "repository": "h13/textlint-rule-rfc2606-domains",
+  "bugs": {
+    "url": "https://github.com/h13/textlint-rule-rfc2606-domains/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/h13/textlint-rule-rfc2606-domains.git"
+  },
   "license": "MIT",
   "author": "h13",
   "type": "module",
@@ -49,5 +55,9 @@
   "packageManager": "pnpm@10.12.1",
   "engines": {
     "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }
