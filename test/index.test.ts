@@ -97,6 +97,30 @@ describe("rfc2606-domains", () => {
       ).toEqual([]);
     });
 
+    it("flags domains matching additionalPatterns", async () => {
+      const messages = await lint("Visit widgetcorp.com for details.", {
+        additionalPatterns: ["widgetcorp"],
+      });
+      expect(messages).toHaveLength(1);
+      expect(messages[0]).toContain("widgetcorp.com");
+    });
+
+    it("does not flag non-matching additionalPatterns", async () => {
+      expect(
+        await lint("Visit github.com for source.", {
+          additionalPatterns: ["widgetcorp"],
+        }),
+      ).toEqual([]);
+    });
+
+    it("fixes domains matching additionalPatterns", async () => {
+      expect(
+        await fix("Set widgetcorp.com in config.", {
+          additionalPatterns: ["widgetcorp"],
+        }),
+      ).toBe("Set example.com in config.");
+    });
+
     it("does not flag non-domain text", async () => {
       expect(await lint("The variable yourDomain is a string.")).toEqual([]);
     });

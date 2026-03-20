@@ -63,6 +63,21 @@ Domains to allow (e.g., your actual production domain):
 }
 ```
 
+#### `additionalPatterns`
+
+Additional placeholder patterns to detect (matched against
+each domain label):
+
+```json
+{
+  "rules": {
+    "rfc2606-domains": {
+      "additionalPatterns": ["widgetcorp", "testcorp"]
+    }
+  }
+}
+```
+
 ## Auto-fix
 
 This rule supports `textlint --fix`. Placeholder domains are

@@ -38,21 +38,29 @@ const isPlaceholderDomain = (domain: string): boolean =>
     .slice(0, -1)
     .some((part) => PLACEHOLDER_PATTERN.test(part));
 
-const buildReplacement = (domain: string, sld: string, tld: string): string => {
+const buildReplacement = (
+  domain: string,
+  sld: string,
+  tld: string,
+  extra?: RegExp | null,
+): string => {
   const baseDomain = `${sld}.${tld}`;
   const subdomainPrefix = domain.slice(0, domain.length - baseDomain.length);
   const rfcDomain = RFC_DOMAIN_MAP[tld.toLowerCase()] ?? "example.com";
   if (!subdomainPrefix) return rfcDomain;
+  const isPlaceholderLabel = (label: string) =>
+    PLACEHOLDER_PATTERN.test(label) || (extra ? extra.test(label) : false);
   const cleanLabels = subdomainPrefix
     .replace(/\.$/, "")
     .split(".")
-    .filter((label) => !PLACEHOLDER_PATTERN.test(label));
+    .filter((label) => !isPlaceholderLabel(label));
   return cleanLabels.length > 0
     ? `${cleanLabels.join(".")}.${rfcDomain}`
     : rfcDomain;
 };
 
 export interface Options {
+  readonly additionalPatterns?: readonly string[];
   readonly allowDomains?: readonly string[];
 }
 
@@ -62,6 +70,10 @@ const reporter: TextlintRuleReporter<Options> = (context, options = {}) => {
   const allowDomains = new Set(
     (options.allowDomains ?? []).map((d) => d.toLowerCase()),
   );
+  const additionalPattern =
+    options.additionalPatterns && options.additionalPatterns.length > 0
+      ? new RegExp(options.additionalPatterns.join("|"), "i")
+      : null;
 
   const checkText = (text: string, node: Node, baseIndex: number) => {
     if (text.length > MAX_TEXT_LENGTH) return;
@@ -77,10 +89,16 @@ const reporter: TextlintRuleReporter<Options> = (context, options = {}) => {
         continue;
       }
 
-      if (isPlaceholderDomain(lower)) {
+      const isAdditional = additionalPattern
+        ? lower
+            .split(".")
+            .slice(0, -1)
+            .some((part) => additionalPattern.test(part))
+        : false;
+      if (isPlaceholderDomain(lower) || isAdditional) {
         const domainIndex = baseIndex + match.index + match[0].indexOf(domain);
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- DOMAIN_REGEX groups 3,4 always capture
-        const replacement = buildReplacement(domain, match[3]!, match[4]!);
+        const replacement = buildReplacement(domain, match[3]!, match[4]!, additionalPattern);
         report(
           node,
           new RuleError(
