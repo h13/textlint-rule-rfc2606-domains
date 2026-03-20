@@ -14,7 +14,11 @@ export default tseslint.config(
     languageOptions: {
       parserOptions: {
         projectService: {
-          allowDefaultProject: ["test/*.test.ts", "eslint.config.mjs", "vitest.config.ts"],
+          allowDefaultProject: [
+            "test/*.test.ts",
+            "eslint.config.mjs",
+            "vitest.config.ts",
+          ],
         },
       },
     },
