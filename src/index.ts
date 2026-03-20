@@ -112,6 +112,12 @@ const reporter: TextlintRuleReporter<Options> = (context, options = {}) => {
     [Syntax.CodeBlock](node) {
       checkNodeProperty(node, "value");
     },
+    [Syntax.Definition](node) {
+      checkNodeProperty(node, "url");
+    },
+    [Syntax.Html](node) {
+      checkText(getSource(node), node, 0);
+    },
     [Syntax.Image](node) {
       checkNodeProperty(node, "url");
     },

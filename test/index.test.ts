@@ -280,6 +280,54 @@ describe("rfc2606-domains", () => {
     it("allows RFC 2606 domains in image URLs", async () => {
       expect(await lintMd("![logo](https://example.org/logo.png)")).toEqual([]);
     });
+
+    it("flags placeholder domains in reference-style link definitions", async () => {
+      const messages = await lintMd("[mylink]: https://your-domain.com/docs");
+      expect(messages).toHaveLength(1);
+      expect(messages[0]).toContain("your-domain.com");
+    });
+
+    it("allows RFC 2606 domains in reference-style link definitions", async () => {
+      expect(
+        await lintMd("[mylink]: https://example.com/docs"),
+      ).toEqual([]);
+    });
+
+    it("fixes placeholder domains in reference-style link definitions", async () => {
+      expect(
+        await fixMd("[mylink]: https://your-domain.com/docs"),
+      ).toBe("[mylink]: https://example.com/docs");
+    });
+  });
+
+  describe("HTML node support", () => {
+    it("flags placeholder domains in inline HTML links", async () => {
+      const messages = await lintMd(
+        '<a href="https://your-domain.com">click</a>',
+      );
+      expect(messages).toHaveLength(1);
+      expect(messages[0]).toContain("your-domain.com");
+    });
+
+    it("flags placeholder domains in HTML img tags", async () => {
+      const messages = await lintMd(
+        '<img src="https://your-domain.com/logo.png" />',
+      );
+      expect(messages).toHaveLength(1);
+      expect(messages[0]).toContain("your-domain.com");
+    });
+
+    it("allows RFC 2606 domains in HTML", async () => {
+      expect(
+        await lintMd('<a href="https://example.com">docs</a>'),
+      ).toEqual([]);
+    });
+
+    it("fixes placeholder domains in HTML", async () => {
+      expect(
+        await fixMd('<a href="https://your-domain.com">click</a>'),
+      ).toBe('<a href="https://example.com">click</a>');
+    });
   });
 
   describe("expanded placeholder patterns", () => {
