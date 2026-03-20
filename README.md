@@ -78,6 +78,23 @@ each domain label):
 }
 ```
 
+#### `ignoreNodes`
+
+AST node types to skip (e.g., don't check code blocks):
+
+```json
+{
+  "rules": {
+    "rfc2606-domains": {
+      "ignoreNodes": ["Code", "CodeBlock"]
+    }
+  }
+}
+```
+
+Available node types: `Str`, `Code`, `CodeBlock`, `Link`,
+`Image`, `Definition`, `Html`
+
 ## Auto-fix
 
 This rule supports `textlint --fix`. Placeholder domains are

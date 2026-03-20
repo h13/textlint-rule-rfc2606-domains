@@ -121,6 +121,72 @@ describe("rfc2606-domains", () => {
       ).toBe("Set example.com in config.");
     });
 
+    it("skips nodes listed in ignoreNodes", async () => {
+      expect(
+        await lintMd("Run `curl https://your-domain.com/api`.", {
+          ignoreNodes: ["Code"],
+        }),
+      ).toEqual([]);
+    });
+
+    it("still flags non-ignored nodes with ignoreNodes", async () => {
+      const messages = await lintMd(
+        "Visit your-domain.com. Run `curl https://your-domain.com`.",
+        { ignoreNodes: ["Code"] },
+      );
+      expect(messages).toHaveLength(1);
+      expect(messages[0]).toContain("your-domain.com");
+    });
+
+    it("skips multiple node types in ignoreNodes", async () => {
+      expect(
+        await lintMd(
+          "```\nhost: your-domain.com\n```\n\nRun `curl your-domain.com`.",
+          { ignoreNodes: ["Code", "CodeBlock"] },
+        ),
+      ).toEqual([]);
+    });
+
+    it("skips Str nodes with ignoreNodes", async () => {
+      expect(
+        await lint("Visit your-domain.com for info.", {
+          ignoreNodes: ["Str"],
+        }),
+      ).toEqual([]);
+    });
+
+    it("skips Html, Image, Link, Definition with ignoreNodes", async () => {
+      expect(
+        await lintMd(
+          '<a href="https://your-domain.com">link</a>',
+          { ignoreNodes: ["Html"] },
+        ),
+      ).toEqual([]);
+      expect(
+        await lintMd("![img](https://your-domain.com/img.png)", {
+          ignoreNodes: ["Image"],
+        }),
+      ).toEqual([]);
+      expect(
+        await lintMd("[link](https://your-domain.com)", {
+          ignoreNodes: ["Link", "Str"],
+        }),
+      ).toEqual([]);
+      expect(
+        await lintMd("[ref]: https://your-domain.com", {
+          ignoreNodes: ["Definition"],
+        }),
+      ).toEqual([]);
+    });
+
+    it("fixes domains matching additionalPatterns with subdomains", async () => {
+      expect(
+        await fix("Call api.widgetcorp.com endpoint.", {
+          additionalPatterns: ["widgetcorp"],
+        }),
+      ).toBe("Call api.example.com endpoint.");
+    });
+
     it("does not flag non-domain text", async () => {
       expect(await lint("The variable yourDomain is a string.")).toEqual([]);
     });

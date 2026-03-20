@@ -42,7 +42,7 @@ const buildReplacement = (
   domain: string,
   sld: string,
   tld: string,
-  extra?: RegExp | null,
+  extra?: null | RegExp,
 ): string => {
   const baseDomain = `${sld}.${tld}`;
   const subdomainPrefix = domain.slice(0, domain.length - baseDomain.length);
@@ -62,6 +62,7 @@ const buildReplacement = (
 export interface Options {
   readonly additionalPatterns?: readonly string[];
   readonly allowDomains?: readonly string[];
+  readonly ignoreNodes?: readonly string[];
 }
 
 const reporter: TextlintRuleReporter<Options> = (context, options = {}) => {
@@ -70,6 +71,7 @@ const reporter: TextlintRuleReporter<Options> = (context, options = {}) => {
   const allowDomains = new Set(
     (options.allowDomains ?? []).map((d) => d.toLowerCase()),
   );
+  const ignoreNodes = new Set(options.ignoreNodes ?? []);
   const additionalPattern =
     options.additionalPatterns && options.additionalPatterns.length > 0
       ? new RegExp(options.additionalPatterns.join("|"), "i")
@@ -130,27 +132,29 @@ const reporter: TextlintRuleReporter<Options> = (context, options = {}) => {
     checkText(value, node, valueStart);
   };
 
+  const skip = (name: string) => ignoreNodes.has(name);
+
   return {
     [Syntax.Code](node) {
-      checkNodeProperty(node, "value");
+      if (!skip("Code")) checkNodeProperty(node, "value");
     },
     [Syntax.CodeBlock](node) {
-      checkNodeProperty(node, "value");
+      if (!skip("CodeBlock")) checkNodeProperty(node, "value");
     },
     [Syntax.Definition](node) {
-      checkNodeProperty(node, "url");
+      if (!skip("Definition")) checkNodeProperty(node, "url");
     },
     [Syntax.Html](node) {
-      checkText(getSource(node), node, 0);
+      if (!skip("Html")) checkText(getSource(node), node, 0);
     },
     [Syntax.Image](node) {
-      checkNodeProperty(node, "url");
+      if (!skip("Image")) checkNodeProperty(node, "url");
     },
     [Syntax.Link](node) {
-      checkNodeProperty(node, "url");
+      if (!skip("Link")) checkNodeProperty(node, "url");
     },
     [Syntax.Str](node) {
-      checkText(getSource(node), node, 0);
+      if (!skip("Str")) checkText(getSource(node), node, 0);
     },
   };
 };
