@@ -76,7 +76,7 @@ automatically replaced with the corresponding RFC 2606 domain:
 ## What Gets Flagged
 
 Domains with placeholder-like names in text, links, images,
-inline code, and code blocks:
+inline code, code blocks, HTML, and reference-style link definitions:
 
 | Pattern         | Example           | Suggestion    |
 | --------------- | ----------------- | ------------- |
