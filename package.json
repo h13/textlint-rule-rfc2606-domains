@@ -1,6 +1,6 @@
 {
   "name": "textlint-rule-rfc2606-domains",
-  "version": "0.4.4",
+  "version": "0.5.0",
   "description": "textlint rule to enforce RFC 2606 reserved domains in documentation",
   "keywords": [
     "textlint",
