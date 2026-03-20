@@ -1,6 +1,6 @@
 {
   "name": "textlint-rule-rfc2606-domains",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "textlint rule to detect placeholder domains and suggest RFC 2606 reserved domains (with auto-fix)",
   "keywords": [
     "textlint",
