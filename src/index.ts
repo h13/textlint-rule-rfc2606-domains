@@ -1,4 +1,4 @@
-import type { TextlintRuleModule } from "@textlint/types";
+import type { TextlintFixableRuleModule, TextlintRuleReporter } from "@textlint/types";
 
 // RFC 2606 reserved second-level domains
 const RESERVED_DOMAINS = new Set([
@@ -10,9 +10,16 @@ const RESERVED_DOMAINS = new Set([
 // RFC 2606 / RFC 6761 reserved TLDs
 const RESERVED_TLDS = new Set([".example", ".invalid", ".localhost", ".test"]);
 
+// Map TLD to RFC 2606 reserved domain for fixer
+const RFC_DOMAIN_MAP: Readonly<Record<string, string>> = {
+  com: "example.com",
+  net: "example.net",
+  org: "example.org",
+};
+
 // Common placeholder domain patterns that should use RFC 2606 domains instead
 const PLACEHOLDER_PATTERN =
-  /your-?domain|my-?domain|my-?site|my-?company|your-?site|your-?company|some-?domain|some-?site|sample-?domain|placeholder|changeme|replace-?me/i;
+  /your-?domain|my-?domain|my-?site|my-?company|your-?site|your-?company|your-?app|your-?api|your-?server|my-?app|my-?api|my-?server|some-?domain|some-?site|sample-?domain|test-?site|test-?domain|fake-?domain|fake-?site|demo-?site|demo-?domain|placeholder|changeme|replace-?me|acme|x{3,}/i;
 
 // Match domain-like strings preceded by any non-alphanumeric character or start of string
 // Captures: optional subdomains + domain + TLD (2+ alpha chars)
@@ -32,12 +39,19 @@ const isPlaceholderDomain = (domain: string): boolean =>
     .slice(0, -1)
     .some((part) => PLACEHOLDER_PATTERN.test(part));
 
+const buildReplacement = (domain: string, sld: string, tld: string): string => {
+  const baseDomain = `${sld}.${tld}`;
+  const subdomainPrefix = domain.slice(0, domain.length - baseDomain.length);
+  const rfcDomain = RFC_DOMAIN_MAP[tld.toLowerCase()] ?? "example.com";
+  return subdomainPrefix + rfcDomain;
+};
+
 export interface Options {
   readonly allowDomains?: readonly string[];
 }
 
-const rule: TextlintRuleModule<Options> = (context, options = {}) => {
-  const { getSource, report, RuleError, Syntax } = context;
+const reporter: TextlintRuleReporter<Options> = (context, options = {}) => {
+  const { fixer, getSource, report, RuleError, Syntax } = context;
   type Node = Parameters<typeof report>[0];
   const allowDomains = new Set(
     (options.allowDomains ?? []).map((d) => d.toLowerCase()),
@@ -59,39 +73,55 @@ const rule: TextlintRuleModule<Options> = (context, options = {}) => {
 
       if (isPlaceholderDomain(lower)) {
         const domainIndex = baseIndex + match.index + match[0].indexOf(domain);
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- DOMAIN_REGEX groups 3,4 always capture
+        const replacement = buildReplacement(domain, match[3]!, match[4]!);
         report(
           node,
           new RuleError(
             `"${domain}" looks like a placeholder domain. Use RFC 2606 reserved domains instead (example.com, example.net, example.org) or reserved TLDs (.test, .example, .invalid, .localhost).`,
-            { index: domainIndex },
+            {
+              fix: fixer.replaceTextRange(
+                [domainIndex, domainIndex + domain.length],
+                replacement,
+              ),
+              index: domainIndex,
+            },
           ),
         );
       }
     }
   };
 
-  const checkNodeUrl = (node: Node) => {
-    /* v8 ignore start -- Link/Image nodes always have a string url present in source */
-    const url = "url" in node ? node.url : undefined;
-    if (typeof url !== "string") return;
+  const checkNodeProperty = (node: Node, prop: string) => {
+    /* v8 ignore start -- target nodes always have the expected string property in source */
+    const value = prop in node ? (node as unknown as Record<string, unknown>)[prop] : undefined;
+    if (typeof value !== "string") return;
     const source = getSource(node);
-    const urlStart = source.lastIndexOf(url);
-    if (urlStart < 0) return;
+    const valueStart = source.lastIndexOf(value);
+    if (valueStart < 0) return;
     /* v8 ignore stop */
-    checkText(url, node, urlStart);
+    checkText(value, node, valueStart);
   };
 
   return {
+    [Syntax.Code](node) {
+      checkNodeProperty(node, "value");
+    },
+    [Syntax.CodeBlock](node) {
+      checkNodeProperty(node, "value");
+    },
     [Syntax.Image](node) {
-      checkNodeUrl(node);
+      checkNodeProperty(node, "url");
     },
     [Syntax.Link](node) {
-      checkNodeUrl(node);
+      checkNodeProperty(node, "url");
     },
     [Syntax.Str](node) {
       checkText(getSource(node), node, 0);
     },
   };
 };
+
+const rule: TextlintFixableRuleModule<Options> = { fixer: reporter, linter: reporter };
 
 export default rule;

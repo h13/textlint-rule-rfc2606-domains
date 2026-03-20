@@ -40,8 +40,25 @@ const createLinter =
     return result.messages.map((m) => m.message);
   };
 
+const createFixer =
+  (ext: string, Processor: ReturnType<typeof createProcessor>) =>
+  async (
+    text: string,
+    options: Record<string, unknown> = {},
+  ): Promise<string> => {
+    const kernel = new TextlintKernel();
+    const result = await kernel.fixText(text, {
+      ext,
+      plugins: [{ plugin: { Processor }, pluginId: ext.slice(1) }],
+      rules: [{ options, rule, ruleId: "rfc2606-domains" }],
+    });
+    return result.output;
+  };
+
 const lint = createLinter(".txt", TextProcessor);
 const lintMd = createLinter(".md", MarkdownProcessor);
+const fix = createFixer(".txt", TextProcessor);
+const fixMd = createFixer(".md", MarkdownProcessor);
 
 describe("rfc2606-domains", () => {
   describe("valid", () => {
@@ -241,6 +258,19 @@ describe("rfc2606-domains", () => {
       expect(messages[0]).toContain("your-domain.com");
     });
 
+    it("flags domain in both link text and URL", async () => {
+      const messages = await lintMd(
+        "[your-domain.com](https://your-domain.com)",
+      );
+      expect(messages).toHaveLength(2);
+    });
+
+    it("fixes domain in URL when link text also contains it", async () => {
+      expect(
+        await fixMd("[your-domain.com](https://your-domain.com)"),
+      ).toBe("[example.com](https://example.com)");
+    });
+
     it("allows RFC 2606 domains in link URLs", async () => {
       expect(
         await lintMd("[docs](https://example.com/docs)"),
@@ -251,6 +281,178 @@ describe("rfc2606-domains", () => {
       expect(
         await lintMd("![logo](https://example.org/logo.png)"),
       ).toEqual([]);
+    });
+  });
+
+  describe("expanded placeholder patterns", () => {
+    it("flags acme.com", async () => {
+      const messages = await lint("Contact acme.com for enterprise plans.");
+      expect(messages).toHaveLength(1);
+      expect(messages[0]).toContain("acme.com");
+    });
+
+    it("flags test-site.org", async () => {
+      const messages = await lint("Deploy to test-site.org for staging.");
+      expect(messages).toHaveLength(1);
+      expect(messages[0]).toContain("test-site.org");
+    });
+
+    it("flags testdomain.com", async () => {
+      const messages = await lint("Set testdomain.com in your config.");
+      expect(messages).toHaveLength(1);
+      expect(messages[0]).toContain("testdomain.com");
+    });
+
+    it("flags fake-domain.net", async () => {
+      const messages = await lint("Use fake-domain.net for testing.");
+      expect(messages).toHaveLength(1);
+      expect(messages[0]).toContain("fake-domain.net");
+    });
+
+    it("flags fakesite.com", async () => {
+      const messages = await lint("Visit fakesite.com for demo.");
+      expect(messages).toHaveLength(1);
+      expect(messages[0]).toContain("fakesite.com");
+    });
+
+    it("flags my-app.dev", async () => {
+      const messages = await lint("Deploy my-app.dev to production.");
+      expect(messages).toHaveLength(1);
+      expect(messages[0]).toContain("my-app.dev");
+    });
+
+    it("flags myserver.com", async () => {
+      const messages = await lint("Connect to myserver.com via SSH.");
+      expect(messages).toHaveLength(1);
+      expect(messages[0]).toContain("myserver.com");
+    });
+
+    it("flags your-api.io", async () => {
+      const messages = await lint("Call your-api.io/v1/users endpoint.");
+      expect(messages).toHaveLength(1);
+      expect(messages[0]).toContain("your-api.io");
+    });
+
+    it("flags yourserver.net", async () => {
+      const messages = await lint("SSH into yourserver.net to deploy.");
+      expect(messages).toHaveLength(1);
+      expect(messages[0]).toContain("yourserver.net");
+    });
+
+    it("flags xxxxx.com", async () => {
+      const messages = await lint("Update xxxxx.com with your domain.");
+      expect(messages).toHaveLength(1);
+      expect(messages[0]).toContain("xxxxx.com");
+    });
+
+    it("flags demo-site.com", async () => {
+      const messages = await lint("Check demo-site.com for preview.");
+      expect(messages).toHaveLength(1);
+      expect(messages[0]).toContain("demo-site.com");
+    });
+
+    it("flags demodomain.org", async () => {
+      const messages = await lint("Visit demodomain.org for the demo.");
+      expect(messages).toHaveLength(1);
+      expect(messages[0]).toContain("demodomain.org");
+    });
+  });
+
+  describe("code node support", () => {
+    it("flags placeholder domains in inline code", async () => {
+      const messages = await lintMd(
+        "Run `curl https://your-domain.com/api`.",
+      );
+      expect(messages).toHaveLength(1);
+      expect(messages[0]).toContain("your-domain.com");
+    });
+
+    it("flags placeholder domains in code blocks", async () => {
+      const messages = await lintMd(
+        "```yaml\nhost: your-domain.com\nport: 443\n```",
+      );
+      expect(messages).toHaveLength(1);
+      expect(messages[0]).toContain("your-domain.com");
+    });
+
+    it("allows RFC 2606 domains in inline code", async () => {
+      expect(await lintMd("Use `curl https://example.com/api`.")).toEqual([]);
+    });
+
+    it("allows RFC 2606 domains in code blocks", async () => {
+      expect(
+        await lintMd("```yaml\nhost: example.com\nport: 443\n```"),
+      ).toEqual([]);
+    });
+  });
+
+  describe("fixer", () => {
+    it("replaces placeholder domain with example.com", async () => {
+      expect(await fix("Configure your-domain.com in DNS.")).toBe(
+        "Configure example.com in DNS.",
+      );
+    });
+
+    it("preserves .net TLD in replacement", async () => {
+      expect(await fix("Set mysite.net as host.")).toBe(
+        "Set example.net as host.",
+      );
+    });
+
+    it("preserves .org TLD in replacement", async () => {
+      expect(await fix("Visit mydomain.org for docs.")).toBe(
+        "Visit example.org for docs.",
+      );
+    });
+
+    it("uses example.com for uncommon TLDs", async () => {
+      expect(await fix("Visit placeholder.dev for docs.")).toBe(
+        "Visit example.com for docs.",
+      );
+    });
+
+    it("preserves subdomains in replacement", async () => {
+      expect(await fix("Call api.your-domain.com for data.")).toBe(
+        "Call api.example.com for data.",
+      );
+    });
+
+    it("replaces multiple placeholder domains", async () => {
+      expect(await fix("Use mydomain.com and your-site.org here.")).toBe(
+        "Use example.com and example.org here.",
+      );
+    });
+
+    it("fixes placeholder domains in markdown links", async () => {
+      expect(await fixMd("[docs](https://your-domain.com/page)")).toBe(
+        "[docs](https://example.com/page)",
+      );
+    });
+
+    it("fixes placeholder domains in markdown images", async () => {
+      expect(await fixMd("![logo](https://your-domain.com/img.png)")).toBe(
+        "![logo](https://example.com/img.png)",
+      );
+    });
+
+    it("does not modify allowed domains", async () => {
+      expect(
+        await fix("Use your-domain.com here.", {
+          allowDomains: ["your-domain.com"],
+        }),
+      ).toBe("Use your-domain.com here.");
+    });
+
+    it("fixes placeholder domains in inline code", async () => {
+      expect(await fixMd("Run `curl https://your-domain.com/api`.")).toBe(
+        "Run `curl https://example.com/api`.",
+      );
+    });
+
+    it("fixes placeholder domains in code blocks", async () => {
+      expect(
+        await fixMd("```\nhost: your-domain.com\n```"),
+      ).toBe("```\nhost: example.com\n```");
     });
   });
 
