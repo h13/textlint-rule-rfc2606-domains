@@ -1,6 +1,6 @@
 {
   "name": "textlint-rule-rfc2606-domains",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "textlint rule to enforce RFC 2606 reserved domains in documentation",
   "keywords": [
     "textlint",
@@ -35,14 +35,12 @@
     "test": "vitest run --coverage",
     "test:watch": "vitest"
   },
-  "dependencies": {
-    "@textlint/types": "15.5.2"
-  },
   "devDependencies": {
     "@eslint/js": "10.0.1",
     "@textlint/kernel": "15.5.2",
     "@textlint/markdown-to-ast": "15.5.2",
     "@textlint/text-to-ast": "15.5.2",
+    "@textlint/types": "15.5.2",
     "@vitest/coverage-v8": "4.1.0",
     "eslint": "10.0.3",
     "eslint-config-prettier": "10.1.8",
@@ -51,6 +49,9 @@
     "typescript": "5.9.3",
     "typescript-eslint": "8.57.0",
     "vitest": "4.1.0"
+  },
+  "peerDependencies": {
+    "@textlint/types": ">=15"
   },
   "packageManager": "pnpm@10.12.1",
   "engines": {
