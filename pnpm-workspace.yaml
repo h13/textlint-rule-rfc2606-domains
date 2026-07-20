@@ -1,0 +1,6 @@
+# pnpm v11 requires an explicit build-script policy (ERR_PNPM_IGNORED_BUILDS
+# otherwise). esbuild is a transitive dep of vitest; its native binary comes
+# from a platform-specific optional dependency, so the build script is denied
+# (matching the pnpm v10 behaviour where it was never run).
+allowBuilds:
+  esbuild: false
