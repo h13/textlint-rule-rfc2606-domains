@@ -1,19 +1,19 @@
 import type {
   TextlintFixableRuleModule,
   TextlintRuleReporter,
-} from "@textlint/types";
+} from '@textlint/types';
 
 // RFC 2606 reserved second-level domains
-const RESERVED_DOMAINS = new Set(["example.com", "example.net", "example.org"]);
+const RESERVED_DOMAINS = new Set(['example.com', 'example.net', 'example.org']);
 
 // RFC 2606 / RFC 6761 reserved TLDs
-const RESERVED_TLDS = new Set([".example", ".invalid", ".localhost", ".test"]);
+const RESERVED_TLDS = new Set(['.example', '.invalid', '.localhost', '.test']);
 
 // Map TLD to RFC 2606 reserved domain for fixer
 const RFC_DOMAIN_MAP: Readonly<Record<string, string>> = {
-  com: "example.com",
-  net: "example.net",
-  org: "example.org",
+  com: 'example.com',
+  net: 'example.net',
+  org: 'example.org',
 };
 
 // Common placeholder domain patterns that should use RFC 2606 domains instead
@@ -30,11 +30,11 @@ const MAX_TEXT_LENGTH = 10_000;
 
 const isReservedDomain = (lower: string): boolean =>
   RESERVED_DOMAINS.has(lower) ||
-  RESERVED_TLDS.has(`.${lower.substring(lower.lastIndexOf(".") + 1)}`);
+  RESERVED_TLDS.has(`.${lower.substring(lower.lastIndexOf('.') + 1)}`);
 
 const isPlaceholderDomain = (domain: string): boolean =>
   domain
-    .split(".")
+    .split('.')
     .slice(0, -1)
     .some((part) => PLACEHOLDER_PATTERN.test(part));
 
@@ -46,16 +46,16 @@ const buildReplacement = (
 ): string => {
   const baseDomain = `${sld}.${tld}`;
   const subdomainPrefix = domain.slice(0, domain.length - baseDomain.length);
-  const rfcDomain = RFC_DOMAIN_MAP[tld.toLowerCase()] ?? "example.com";
+  const rfcDomain = RFC_DOMAIN_MAP[tld.toLowerCase()] ?? 'example.com';
   if (!subdomainPrefix) return rfcDomain;
   const isPlaceholderLabel = (label: string) =>
     PLACEHOLDER_PATTERN.test(label) || (extra ? extra.test(label) : false);
   const cleanLabels = subdomainPrefix
-    .replace(/\.$/, "")
-    .split(".")
+    .replace(/\.$/, '')
+    .split('.')
     .filter((label) => !isPlaceholderLabel(label));
   return cleanLabels.length > 0
-    ? `${cleanLabels.join(".")}.${rfcDomain}`
+    ? `${cleanLabels.join('.')}.${rfcDomain}`
     : rfcDomain;
 };
 
@@ -74,7 +74,7 @@ const reporter: TextlintRuleReporter<Options> = (context, options = {}) => {
   const ignoreNodes = new Set(options.ignoreNodes ?? []);
   const additionalPattern =
     options.additionalPatterns && options.additionalPatterns.length > 0
-      ? new RegExp(options.additionalPatterns.join("|"), "i")
+      ? new RegExp(options.additionalPatterns.join('|'), 'i')
       : null;
 
   const checkText = (text: string, node: Node, baseIndex: number) => {
@@ -93,14 +93,19 @@ const reporter: TextlintRuleReporter<Options> = (context, options = {}) => {
 
       const isAdditional = additionalPattern
         ? lower
-            .split(".")
+            .split('.')
             .slice(0, -1)
             .some((part) => additionalPattern.test(part))
         : false;
       if (isPlaceholderDomain(lower) || isAdditional) {
         const domainIndex = baseIndex + match.index + match[0].indexOf(domain);
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- DOMAIN_REGEX groups 3,4 always capture
-        const replacement = buildReplacement(domain, match[3]!, match[4]!, additionalPattern);
+        const replacement = buildReplacement(
+          domain,
+          match[3]!,
+          match[4]!,
+          additionalPattern,
+        );
         report(
           node,
           new RuleError(
@@ -124,7 +129,7 @@ const reporter: TextlintRuleReporter<Options> = (context, options = {}) => {
       prop in node
         ? (node as unknown as Record<string, unknown>)[prop]
         : undefined;
-    if (typeof value !== "string") return;
+    if (typeof value !== 'string') return;
     const source = getSource(node);
     const valueStart = source.lastIndexOf(value);
     if (valueStart < 0) return;
@@ -136,25 +141,25 @@ const reporter: TextlintRuleReporter<Options> = (context, options = {}) => {
 
   return {
     [Syntax.Code](node) {
-      if (!skip("Code")) checkNodeProperty(node, "value");
+      if (!skip('Code')) checkNodeProperty(node, 'value');
     },
     [Syntax.CodeBlock](node) {
-      if (!skip("CodeBlock")) checkNodeProperty(node, "value");
+      if (!skip('CodeBlock')) checkNodeProperty(node, 'value');
     },
     [Syntax.Definition](node) {
-      if (!skip("Definition")) checkNodeProperty(node, "url");
+      if (!skip('Definition')) checkNodeProperty(node, 'url');
     },
     [Syntax.Html](node) {
-      if (!skip("Html")) checkText(getSource(node), node, 0);
+      if (!skip('Html')) checkText(getSource(node), node, 0);
     },
     [Syntax.Image](node) {
-      if (!skip("Image")) checkNodeProperty(node, "url");
+      if (!skip('Image')) checkNodeProperty(node, 'url');
     },
     [Syntax.Link](node) {
-      if (!skip("Link")) checkNodeProperty(node, "url");
+      if (!skip('Link')) checkNodeProperty(node, 'url');
     },
     [Syntax.Str](node) {
-      if (!skip("Str")) checkText(getSource(node), node, 0);
+      if (!skip('Str')) checkText(getSource(node), node, 0);
     },
   };
 };

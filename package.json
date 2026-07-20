@@ -3,65 +3,62 @@
   "version": "1.0.0",
   "description": "textlint rule to detect placeholder domains and suggest RFC 2606 reserved domains (with auto-fix)",
   "keywords": [
-    "textlint",
-    "textlintrule",
-    "rfc2606",
+    "autofix",
+    "documentation",
     "domain",
     "example.com",
     "placeholder",
-    "autofix",
-    "documentation"
+    "rfc2606",
+    "textlint",
+    "textlintrule"
   ],
   "homepage": "https://github.com/h13/textlint-rule-rfc2606-domains",
   "bugs": {
     "url": "https://github.com/h13/textlint-rule-rfc2606-domains/issues"
   },
+  "license": "MIT",
+  "author": "h13",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/h13/textlint-rule-rfc2606-domains.git"
   },
-  "license": "MIT",
-  "author": "h13",
-  "type": "module",
-  "exports": "./dist/index.js",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "files": [
     "dist/"
   ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": "./dist/index.js",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "scripts": {
     "build": "tsc",
     "check": "tsc --noEmit && vitest run",
-    "format": "prettier --write .",
-    "lint": "eslint .",
+    "format": "oxfmt --write .",
+    "lint": "oxlint --type-aware src test",
     "prepublishOnly": "pnpm run build && vitest run",
     "test": "vitest run --coverage",
     "test:watch": "vitest"
   },
   "devDependencies": {
-    "@eslint/js": "10.0.1",
     "@textlint/kernel": "15.7.1",
     "@textlint/markdown-to-ast": "15.7.1",
     "@textlint/text-to-ast": "15.7.1",
     "@textlint/types": "15.7.1",
     "@vitest/coverage-v8": "4.1.10",
-    "eslint": "10.7.0",
-    "eslint-config-prettier": "10.1.8",
-    "eslint-plugin-perfectionist": "5.10.0",
-    "prettier": "3.9.5",
+    "oxfmt": "0.59.0",
+    "oxlint": "1.74.0",
+    "oxlint-tsgolint": "0.25.0",
     "typescript": "6.0.3",
-    "typescript-eslint": "8.64.0",
     "vitest": "4.1.10"
   },
   "peerDependencies": {
     "@textlint/types": ">=15"
   },
-  "packageManager": "pnpm@10.34.5",
   "engines": {
     "node": ">=18"
   },
-  "publishConfig": {
-    "access": "public",
-    "provenance": true
-  }
+  "packageManager": "pnpm@10.34.5"
 }
