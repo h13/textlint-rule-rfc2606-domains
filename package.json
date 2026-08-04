@@ -46,7 +46,7 @@
     "@textlint/kernel": "15.8.0",
     "@textlint/markdown-to-ast": "15.8.0",
     "@textlint/text-to-ast": "15.8.0",
-    "@textlint/types": "15.7.1",
+    "@textlint/types": "15.8.0",
     "@vitest/coverage-v8": "4.1.10",
     "oxfmt": "0.61.0",
     "oxlint": "1.76.0",
