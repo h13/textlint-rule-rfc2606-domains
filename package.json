@@ -47,12 +47,12 @@
     "@textlint/markdown-to-ast": "15.8.0",
     "@textlint/text-to-ast": "15.8.0",
     "@textlint/types": "15.8.0",
-    "@vitest/coverage-v8": "4.1.10",
+    "@vitest/coverage-v8": "4.1.11",
     "oxfmt": "0.63.0",
     "oxlint": "1.78.0",
     "oxlint-tsgolint": "7.0.2001",
     "typescript": "7.0.2",
-    "vitest": "4.1.10"
+    "vitest": "4.1.11"
   },
   "peerDependencies": {
     "@textlint/types": ">=15"
