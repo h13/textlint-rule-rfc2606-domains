@@ -9,7 +9,7 @@ permissions: read-all
 
 jobs:
   ci:
-    uses: h13/.github/.github/workflows/ci-node.yml@v1
+    uses: h13/.github/.github/workflows/ci-node.yml@7498aee6e25cd3f2eecebea71078a27f8e40b1ac # v1
 
   codecov:
     runs-on: ubuntu-latest
