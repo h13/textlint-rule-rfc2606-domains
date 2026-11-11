@@ -48,7 +48,7 @@
     "@textlint/text-to-ast": "15.8.0",
     "@textlint/types": "15.8.0",
     "@vitest/coverage-v8": "5.1.0",
-    "oxfmt": "0.77.0",
+    "oxfmt": "0.78.0",
     "oxlint": "1.93.0",
     "oxlint-tsgolint": "7.0.2006",
     "typescript": "7.0.2",
