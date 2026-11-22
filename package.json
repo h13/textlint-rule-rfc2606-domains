@@ -43,7 +43,7 @@
     "test:watch": "vitest"
   },
   "devDependencies": {
-    "@textlint/kernel": "15.8.0",
+    "@textlint/kernel": "16.1.2",
     "@textlint/markdown-to-ast": "15.8.0",
     "@textlint/text-to-ast": "15.8.0",
     "@textlint/types": "15.8.0",
