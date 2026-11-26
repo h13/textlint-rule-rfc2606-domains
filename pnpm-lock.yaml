@@ -189,8 +189,8 @@ importers:
         specifier: 16.1.3
         version: 16.1.3
       '@textlint/markdown-to-ast':
-        specifier: 16.1.2
-        version: 16.1.2
+        specifier: 16.1.3
+        version: 16.1.3
       '@textlint/text-to-ast':
         specifier: 16.1.2
         version: 16.1.2
@@ -643,8 +643,8 @@ packages:
   '@textlint/kernel@16.1.3':
     resolution: {integrity: sha512-x4GpE8EIyuSqeKpYIYUmdu8uWJ8qkivGYW0WxXLMPEFLOJT/adDvitagAtJenpunTtNTLLQds8LgDfHUG/AjRg==}
 
-  '@textlint/markdown-to-ast@16.1.2':
-    resolution: {integrity: sha512-zasofZ6AmUV/sQ+j5+fakFWllxExZ9RJXK6hg/So9SkD2bTUWW7YCNsE2cBRUeWY3yN0DLsNqLe31jNWF9c3VQ==}
+  '@textlint/markdown-to-ast@16.1.3':
+    resolution: {integrity: sha512-y71nzolxuU6RBKlxGVvT8ew+Wi0wh9yXNn6bXfN3Gz4ErjGmaAbFM4klWXEEIQ+sPNwzFv/7FNsctW92BvT1fg==}
 
   '@textlint/source-code-fixer@16.1.3':
     resolution: {integrity: sha512-TVO6Tly1VoXOL06mI50fBNE3kBIPGQzIOn6EMGrmQmr0j6shBGs+ezZ0zesVtNcN8J2rTf8q1ZoqhAo/a8pMqg==}
@@ -1375,9 +1375,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@textlint/markdown-to-ast@16.1.2':
+  '@textlint/markdown-to-ast@16.1.3':
     dependencies:
-      '@textlint/ast-node-types': 16.1.2
+      '@textlint/ast-node-types': 16.1.3
 
   '@textlint/source-code-fixer@16.1.3':
     dependencies:
